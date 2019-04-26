@@ -30,13 +30,24 @@ class DefaultController extends ActiveController
         
         $model = new $this->modelClass;
 
-        if($model->load(Yii::$app->getRequest()->getBodyParams(), '')){
+        $model->chave = Yii::$app->getRequest()->getBodyParams()['chave'];
+
+        $model->pdf = Yii::$app->getRequest()->getBodyParams()['pdf'];
+
+        if($model->chave != null && $model->pdf != null){
+
+        	if($model->save()){
+        		$response = Yii::$app->getResponse();
+				$response->setStatusCode(201);
+        	}else{
+        		$response = Yii::$app->getResponse();
+				$response->setStatusCode(400);
+        	}
+
+    		return $model->pdf;
 
         }
 
-        $response = Yii::$app->getResponse();
-		$response->setStatusCode(201);
-
-		return 'Brasil';
+        
     }
 }

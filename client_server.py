@@ -67,10 +67,14 @@ while True:
 
 		lista_id = []
 
+		lista_nome = []
+
 		for k in lines:
 			lista_id.append(k[0])
 
-			lista_arq.append(k[1])
+			lista_nome.append(k[2])
+
+			lista_arq.append(k[1]+k[2])
 
 		arq.close()
 
@@ -78,7 +82,7 @@ while True:
 
 		for k in range(0, tam, 1):
 
-			upload('Certificados/NF048826_ITEM1.pdf', 'NF048826_ITEM1.pdf', ftp)
+			upload(lista_arq[k], lista_nome[k], ftp)
 
 			#requisição
 
