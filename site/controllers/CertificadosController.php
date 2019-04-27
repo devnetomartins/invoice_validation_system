@@ -39,6 +39,33 @@ class CertificadosController extends Controller
     {
         $model = new Certificados();
 
+        $request = Yii::$app->request;
+
+        $chave = $request->get('chave'); 
+
+        if($chave != null){
+        $pdf = (new \yii\db\Query())
+        ->select(['pdf'])
+        ->from('certificados')
+        ->where(['chave' => $model->chave])
+        ->all();
+
+            if($pdf != null){
+                //chave existe no banco
+                chdir('../backup/');
+
+                $diretorio = getcwd() . $pdf[0]['pdf'];
+
+                return Yii::$app->response->sendFile($diretorio, 'nota.pdf', ['inline'=>true]);
+
+            }else{
+
+                //Caso nao exista
+
+                return $this->redirect(['consulta', 'error' => '1']);
+            }
+        }
+
         if ($model->load(Yii::$app->request->post())) {
 
             //Busca no banco
@@ -49,25 +76,20 @@ class CertificadosController extends Controller
         ->where(['chave' => $model->chave])
         ->all();
 
-        $decoded = base64_decode($pdf);
+            if($pdf != null){
+                //chave existe no banco
+                chdir('../backup/');
 
-        $file = 'invoice.pdf';
+                $diretorio = getcwd() . $pdf[0]['pdf'];
 
-        file_put_contents($file, $decoded);
+                return Yii::$app->response->sendFile($diretorio, 'nota.pdf', ['inline'=>true]);
 
-        if (file_exists($file)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="'.basename($file).'"');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($file));
-            readfile($file);
-            
-        }
+            }else{
 
-            return $this->redirect(['view', 'id' => $model->chave]);
+                //Caso nao exista
+                
+                return $this->redirect(['consulta', 'error' => '1']);
+            }
         }
 
         return $this->render('create', [

@@ -3,6 +3,9 @@ from datetime import datetime
 import csv
 import time
 import os
+import requests, json
+
+url = 'http://localhost/invoice_validation_system/site/web/index.php?r=api%2Fdefault%2Fcreate'
 
 def verifica_dir(dir_name, ftp):
 	try:
@@ -33,6 +36,9 @@ while True:
 		#conexao
 		ftp = FTP("107.180.51.34")
 		ftp.login('envio@certificados.sapucaia.com','teste12345')
+		print(ftp.pwd())
+		ftp.quit()
+		break
 		ftp.cwd("backup")
 
 		data = datetime.now()
@@ -59,7 +65,13 @@ while True:
 
 		#lendo o .csv para envio dos arquivos
 
-		arq = open('ExpCertificado.csv')
+		try:
+
+			arq = open('ExpCertificado.csv')
+
+		except:
+			
+			break
 
 		lines = csv.reader(arq, delimiter=';')
 
@@ -82,9 +94,22 @@ while True:
 
 		for k in range(0, tam, 1):
 
-			upload(lista_arq[k], lista_nome[k], ftp)
+			while True:
 
-			#requisição
+				if upload(lista_arq[k], lista_nome[k], ftp):
+
+					#requisição
+
+					chave = lista_id[k]
+
+					pdf = '/'+ str(mes) + '/' + str(ano)
+
+					dados = data = {'chave' : chave, 'pdf': pdf}
+
+					response = requests.post(url, data=dados)
+
+					if response.status_code == 201:
+						break
 
 		ftp.quit()
 		exit()
