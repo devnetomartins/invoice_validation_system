@@ -4,8 +4,10 @@ import csv
 import time
 import os
 import requests, json
+import shutil
+import os
 
-url = 'http://localhost/invoice_validation_system/site/web/index.php?r=api%2Fdefault%2Fcreate'
+url = 'http://certificados.sapucaia.com/invoice_validation_system/site/web/index.php?r=api%2Fdefault%2Fcreate'
 
 def verifica_dir(dir_name, ftp):
 	try:
@@ -28,17 +30,17 @@ def upload(sourceFilePath, name, ftp):
 			return True
 	except Exception as ex:
 		print(ex)
+		return False
 
 while True:
 
 	try:
+
 		print("conexao")
 		#conexao
-		ftp = FTP("107.180.51.34")
-		ftp.login('envio@certificados.sapucaia.com','teste12345')
+		ftp = FTP("162.241.203.140")
+		ftp.login('envio@certificados.sapucaia.com','Certificados@')
 		print(ftp.pwd())
-		ftp.quit()
-		break
 		ftp.cwd("backup")
 
 		data = datetime.now()
@@ -67,10 +69,12 @@ while True:
 
 		try:
 
-			arq = open('ExpCertificado.csv')
+			arq = open('S:\\certificado\\ExpCertificado.csv')
 
-		except:
-			
+		except IOError:
+
+			print('Nao existe')
+
 			break
 
 		lines = csv.reader(arq, delimiter=';')
@@ -82,43 +86,58 @@ while True:
 		lista_nome = []
 
 		for k in lines:
-			lista_id.append(k[0])
+			if k:
+				lista_id.append(k[0])
 
-			lista_nome.append(k[2])
+				lista_nome.append(k[2])
 
-			lista_arq.append(k[1]+k[2])
+				lista_arq.append(k[1]+k[2])
+			
 
-		arq.close()
+		tam = len(lista_nome)
 
-		tam = len(lista_arq)
+		print(tam)
 
 		for k in range(0, tam, 1):
+			print(k)
 
 			while True:
 
 				if upload(lista_arq[k], lista_nome[k], ftp):
 
-					#requisição
+					while True:
 
-					chave = lista_id[k]
+						#requisição
 
-					pdf = '/'+ str(mes) + '/' + str(ano)
+						chave = lista_id[k]
 
-					dados = data = {'chave' : chave, 'pdf': pdf}
+						pdf = '/'+ str(ano) + '/' + str(mes) + '/' + str(lista_nome[k])
 
-					response = requests.post(url, data=dados)
+						dados = data = {'chave' : chave, 'pdf': pdf}
 
-					if response.status_code == 201:
-						break
+						response = requests.post(url, data=dados)
+
+						print(lista_nome[k])
+						print(response.status_code)
+
+						if response.status_code == 201:
+							print('Requisicao efetuada')
+							break
+
+				break
 
 		ftp.quit()
-		exit()
+		arq.close()
+		#logica para mover o arquivo para pasta de processados
+		print('movendo csv')
+		nome = str(ano)+'-'+str(mes)+'-'+'ExpCertificado.csv'
+
+		os.rename('S:\\certificado\\ExpCertificado.csv', 'S:\\certificado\\'+nome)
+
+		shutil.move('S:\\certificado\\'+nome, 'S:\\certificado\\processados\\')
+
+		break
 
 	except Exception as ex:
-
 		print(ex)
 		time.sleep(2)
-
-
-
-

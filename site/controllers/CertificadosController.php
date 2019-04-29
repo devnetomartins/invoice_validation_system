@@ -47,7 +47,7 @@ class CertificadosController extends Controller
         $pdf = (new \yii\db\Query())
         ->select(['pdf'])
         ->from('certificados')
-        ->where(['chave' => $model->chave])
+        ->where(['chave' => $chave])
         ->all();
 
             if($pdf != null){
@@ -87,7 +87,7 @@ class CertificadosController extends Controller
             }else{
 
                 //Caso nao exista
-                
+
                 return $this->redirect(['consulta', 'error' => '1']);
             }
         }
